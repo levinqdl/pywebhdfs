@@ -22,6 +22,7 @@ class PyWebHdfsClient(object):
     def __init__(self, host='localhost', port='50070', user_name=None,
                  path_to_hosts=None, timeout=120,
                  base_uri_pattern="http://{host}:{port}/webhdfs/v1/",
+                 headers={},
                  request_extra_opts={}):
         """
         Create a new client for interacting with WebHDFS
@@ -50,6 +51,7 @@ class PyWebHdfsClient(object):
         self.user_name = user_name
         self.timeout = timeout
         self.session = requests.Session()
+        self.session.headers.update(headers)
         self.path_to_hosts = path_to_hosts
         if self.path_to_hosts is None:
             self.path_to_hosts = [('.*', [self.host])]
