@@ -160,18 +160,11 @@ class PyWebHdfsClient(object):
 
         # make the initial APPEND call to the HDFS namenode
         optional_args = kwargs
-
-        init_response = self._resolve_host(self.session.post, False,
-                                           path, operations.APPEND,
-                                           **optional_args)
-        if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
-            _raise_pywebhdfs_exception(
-                init_response.status_code, init_response.content)
+        uri = self.preflight(self.session.post, path, operations.APPEND, **optional_args)
 
         # Get the address provided in the location header of the
         # initial response from the namenode and make the APPEND request
         # to the datanode
-        uri = init_response.headers['location']
         response = self.session.post(
             uri, data=file_data,
             headers={'content-type': 'application/octet-stream'},
