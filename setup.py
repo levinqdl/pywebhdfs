@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pywebhdfsme",
-    version="0.0.4",
+    version="0.0.5",
     author="Qu Delin",
     author_email="levinqdl@magicengine.com.cn",
     description="Python wrapper for the Hadoop WebHDFS REST API",

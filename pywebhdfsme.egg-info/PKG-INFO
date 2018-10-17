@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: pywebhdfsme
-Version: 0.0.3
+Version: 0.0.5
 Summary: Python wrapper for the Hadoop WebHDFS REST API
 Home-page: https://github.com/levinqdl/pywebhdfs/
 Author: Qu Delin

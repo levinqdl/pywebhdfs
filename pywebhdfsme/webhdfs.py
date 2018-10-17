@@ -23,6 +23,7 @@ class PyWebHdfsClient(object):
                  path_to_hosts=None, timeout=120,
                  base_uri_pattern="http://{host}:{port}/webhdfs/v1/",
                  headers={},
+                 intercepter=lambda uri: uri,
                  request_extra_opts={}):
         """
         Create a new client for interacting with WebHDFS
@@ -52,6 +53,7 @@ class PyWebHdfsClient(object):
         self.timeout = timeout
         self.session = requests.Session()
         self.session.headers.update(headers)
+        self.intercepter = intercepter
         self.path_to_hosts = path_to_hosts
         if self.path_to_hosts is None:
             self.path_to_hosts = [('.*', [self.host])]
@@ -60,10 +62,15 @@ class PyWebHdfsClient(object):
             host="{host}", port=port)
         self.request_extra_opts = request_extra_opts
 
-    def set_headers(self, headers):
-        self.session.headers.update(headers)
+    def preflight(self, method, path, operation, **kwargs):
+        optional_args = kwargs
+        response = self._resolve_host(method, False, path, operation, **optional_args)
+        if not response.status_code == http_client.TEMPORARY_REDIRECT:
+            _raise_pywebhdfs_exception(response.status_code, response.content)
+        
+        return self.intercepter(response.headers['location'])
 
-    def create_file(self, path, file_data, interceptor = lambda uri: uri, **kwargs):
+    def create_file(self, path, file_data, **kwargs):
         """
         Creates a new file on HDFS
 
@@ -104,17 +111,10 @@ class PyWebHdfsClient(object):
         # make the initial CREATE call to the HDFS namenode
         optional_args = kwargs
 
-        init_response = self._resolve_host(self.session.put, False,
-                                           path, operations.CREATE,
-                                           **optional_args)
-        if not init_response.status_code == http_client.TEMPORARY_REDIRECT:
-            _raise_pywebhdfs_exception(
-                init_response.status_code, init_response.content)
-
         # Get the address provided in the location header of the
         # initial response from the namenode and make the CREATE request
         # to the datanode
-        uri = interceptor(init_response.headers['location'])
+        uri = self.preflight(self.session.put, path, operations.CREATE, **optional_args)
         response = self.session.put(
             uri, data=file_data,
             headers={'content-type': 'application/octet-stream'},
@@ -209,10 +209,8 @@ class PyWebHdfsClient(object):
         """
 
         optional_args = kwargs
-
-        response = self._resolve_host(self.session.get, True,
-                                      path, operations.OPEN,
-                                      **optional_args)
+        uri = self.preflight(self.session.get, path, operations.OPEN, **optional_args)
+        response = self.session.get(uri, **self.request_extra_opts)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
