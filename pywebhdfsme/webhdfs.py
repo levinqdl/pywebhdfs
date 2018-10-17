@@ -60,6 +60,9 @@ class PyWebHdfsClient(object):
             host="{host}", port=port)
         self.request_extra_opts = request_extra_opts
 
+    def set_headers(self, headers):
+        self.session.headers.update(headers)
+
     def create_file(self, path, file_data, interceptor = lambda uri: uri, **kwargs):
         """
         Creates a new file on HDFS
