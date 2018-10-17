@@ -7,7 +7,7 @@ try:
 except ImportError:
     from urllib import quote, quote_plus
 
-from pywebhdfs import errors, operations
+from pywebhdfsme import errors, operations
 
 
 class PyWebHdfsClient(object):
