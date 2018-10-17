@@ -60,7 +60,7 @@ class PyWebHdfsClient(object):
             host="{host}", port=port)
         self.request_extra_opts = request_extra_opts
 
-    def create_file(self, path, file_data, **kwargs):
+    def create_file(self, path, file_data, interceptor = lambda uri: uri, **kwargs):
         """
         Creates a new file on HDFS
 
@@ -111,7 +111,7 @@ class PyWebHdfsClient(object):
         # Get the address provided in the location header of the
         # initial response from the namenode and make the CREATE request
         # to the datanode
-        uri = init_response.headers['location']
+        uri = interceptor(init_response.headers['location'])
         response = self.session.put(
             uri, data=file_data,
             headers={'content-type': 'application/octet-stream'},
