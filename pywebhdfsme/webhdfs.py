@@ -455,8 +455,8 @@ class PyWebHdfsClient(object):
         }
         """
 
-        response = self._resolve_host(self.session.get, True,
-                                      path, operations.GETFILECHECKSUM)
+        uri = self.preflight(self.session.get, path, operations.GETFILECHECKSUM)
+        response = self.session.get(uri)
         if not response.status_code == http_client.OK:
             _raise_pywebhdfs_exception(response.status_code, response.content)
 
